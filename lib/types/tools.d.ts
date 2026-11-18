@@ -37,6 +37,8 @@ export interface ToolsConfig {
     routerBatchWindowMs?: number;
     /** Watchdog overrides merged onto {@link DEFAULT_WATCHDOG}. */
     watchdog?: Partial<WatchdogOptions>;
+    /** Periodic blackboard retention policy; defaults to 30 days with pinned/decisions kept. */
+    blackboardCleanup?: import('./blackboard-cleanup.ts').BlackboardCleanupOptions;
 }
 /** Browser/UI mutations allowed while a plan is waiting for approval. */
 export type StagedPlanMutation = {

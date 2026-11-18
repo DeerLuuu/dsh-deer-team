@@ -16,6 +16,20 @@ export declare const BLACKBOARD_MAX_CONTENT = 4000;
 /** Default and maximum number of entries a read call returns. */
 export declare const BLACKBOARD_DEFAULT_LIMIT = 50;
 export declare const BLACKBOARD_MAX_LIMIT = 200;
+/** Automatic cleanup policy for the durable blackboard feed. */
+export interface BlackboardCleanupPolicy {
+    enabled: boolean;
+    /** Entries older than this many days become eligible for removal. */
+    retentionDays: number;
+    /** The newest N entries are always retained regardless of age. */
+    keepLatest: number;
+    /** Pinned entries survive cleanup. */
+    keepPinned: boolean;
+    /** Decision entries survive cleanup (durable decisions). */
+    keepDecisions: boolean;
+}
+/** Default cleanup: 30 days, newest 10, pinned and decisions retained. */
+export declare const DEFAULT_BLACKBOARD_CLEANUP: BlackboardCleanupPolicy;
 /**
  * Coerce one persisted blackboard value into the canonical shape.
  * Invalid entries are dropped instead of bricking the whole team record.
@@ -50,6 +64,21 @@ export declare function voteBlackboardEntry(team: TeamState, input: {
 };
 /** Remove every entry (captain-only at the tool layer); returns how many were removed. */
 export declare function clearBlackboard(team: TeamState): number;
+/**
+ * Apply the automatic cleanup policy to one board.
+ *
+ * Entries older than `retentionDays` are removed unless they are among the
+ * newest `keepLatest`, pinned, or a decision (when those protections are on).
+ * The board id sequence is never reset, so ids stay stable for references.
+ * @param team - the team whose board is cleaned (mutated).
+ * @param policy - the resolved cleanup policy.
+ * @param now - reference time for the retention cutoff.
+ * @returns removed count and ids; `lastCleanupAt` is stamped only when something was removed.
+ */
+export declare function cleanupBlackboard(team: TeamState, policy?: BlackboardCleanupPolicy, now?: number): {
+    removed: number;
+    ids: string[];
+};
 /** One entry as returned by a board read. */
 export interface BlackboardReadEntry {
     id: string;
@@ -67,6 +96,8 @@ export interface BlackboardReadEntry {
 export interface BlackboardQuery {
     author?: string;
     kind?: string;
+    /** Case-insensitive substring over content and author. */
+    q?: string;
     limit?: number;
 }
 /** Read (pinned first, then the rest oldest → newest) the board. */

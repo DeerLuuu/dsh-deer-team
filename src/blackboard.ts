@@ -28,6 +28,30 @@ export const BLACKBOARD_MAX_CONTENT = 4000
 export const BLACKBOARD_DEFAULT_LIMIT = 50
 export const BLACKBOARD_MAX_LIMIT = 200
 
+/** Automatic cleanup policy for the durable blackboard feed. */
+export interface BlackboardCleanupPolicy {
+  enabled: boolean
+  /** Entries older than this many days become eligible for removal. */
+  retentionDays: number
+  /** The newest N entries are always retained regardless of age. */
+  keepLatest: number
+  /** Pinned entries survive cleanup. */
+  keepPinned: boolean
+  /** Decision entries survive cleanup (durable decisions). */
+  keepDecisions: boolean
+}
+
+/** Default cleanup: 30 days, newest 10, pinned and decisions retained. */
+export const DEFAULT_BLACKBOARD_CLEANUP: BlackboardCleanupPolicy = {
+  enabled: true,
+  retentionDays: 30,
+  keepLatest: 10,
+  keepPinned: true,
+  keepDecisions: true,
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
 const KIND_SET = new Set<string>(BLACKBOARD_ENTRY_KINDS)
 const VOTE_SET = new Set<string>(['up', 'down'])
 
@@ -82,7 +106,10 @@ export function normalizeBlackboard(raw: unknown): BlackboardState {
   const seq = typeof raw['seq'] === 'number' && Number.isSafeInteger(raw['seq']) && raw['seq'] >= 0
     ? raw['seq']
     : entries.reduce((max, entry) => Math.max(max, entryIdNumber(entry.id)), 0)
-  return { seq, entries }
+  const lastCleanupAt = typeof raw['lastCleanupAt'] === 'number' && Number.isFinite(raw['lastCleanupAt'])
+    ? raw['lastCleanupAt']
+    : undefined
+  return { seq, entries, ...lastCleanupAt === undefined ? {} : { lastCleanupAt } }
 }
 
 function entryIdNumber(id: string): number {
@@ -183,6 +210,40 @@ export function clearBlackboard(team: TeamState): number {
   return removed
 }
 
+/**
+ * Apply the automatic cleanup policy to one board.
+ *
+ * Entries older than `retentionDays` are removed unless they are among the
+ * newest `keepLatest`, pinned, or a decision (when those protections are on).
+ * The board id sequence is never reset, so ids stay stable for references.
+ * @param team - the team whose board is cleaned (mutated).
+ * @param policy - the resolved cleanup policy.
+ * @param now - reference time for the retention cutoff.
+ * @returns removed count and ids; `lastCleanupAt` is stamped only when something was removed.
+ */
+export function cleanupBlackboard(team: TeamState, policy: BlackboardCleanupPolicy = DEFAULT_BLACKBOARD_CLEANUP, now = Date.now()): {
+  removed: number
+  ids: string[]
+} {
+  const board = ensureBlackboard(team)
+  if (!policy.enabled) return { removed: 0, ids: [] }
+  const retentionDays = Number.isFinite(policy.retentionDays) ? Math.max(1, Math.trunc(policy.retentionDays)) : DEFAULT_BLACKBOARD_CLEANUP.retentionDays
+  const cutoff = now - retentionDays * DAY_MS
+  const keepLatest = Number.isFinite(policy.keepLatest) ? Math.max(0, Math.trunc(policy.keepLatest)) : 0
+  const protectedIds = new Set(board.entries.slice(-keepLatest).map((entry) => entry.id))
+  const ids: string[] = []
+  board.entries = board.entries.filter((entry) => {
+    if (entry.createdAt >= cutoff) return true
+    if (policy.keepPinned && entry.pinned === true) return true
+    if (policy.keepDecisions && entry.kind === 'decision') return true
+    if (protectedIds.has(entry.id)) return true
+    ids.push(entry.id)
+    return false
+  })
+  if (ids.length > 0) board.lastCleanupAt = now
+  return { removed: ids.length, ids }
+}
+
 /** One entry as returned by a board read. */
 export interface BlackboardReadEntry {
   id: string
@@ -201,6 +262,8 @@ export interface BlackboardReadEntry {
 export interface BlackboardQuery {
   author?: string
   kind?: string
+  /** Case-insensitive substring over content and author. */
+  q?: string
   limit?: number
 }
 
@@ -210,9 +273,11 @@ export function readBlackboard(team: TeamState, query: BlackboardQuery = {}): {
   total: number
 } {
   const board = ensureBlackboard(team)
+  const needle = query.q?.trim().toLowerCase() ?? ''
   const filtered = board.entries.filter((entry) => (
     (query.author === undefined || entry.author === query.author)
     && (query.kind === undefined || entry.kind === query.kind)
+    && (needle === '' || entry.content.toLowerCase().includes(needle) || entry.author.toLowerCase().includes(needle))
   ))
   const limit = Math.max(1, Math.min(BLACKBOARD_MAX_LIMIT, Math.trunc(query.limit ?? BLACKBOARD_DEFAULT_LIMIT)))
   // Pinned entries always lead the feed; `limit` bounds the latest unpinned

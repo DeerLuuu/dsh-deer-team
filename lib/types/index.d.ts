@@ -62,6 +62,18 @@ export interface Config {
         notifyCaptain?: boolean;
     };
     /**
+     * Periodic removal of stale blackboard entries. Defaults are on: keep the
+     * newest 10, pinned entries and decisions, drop the rest after 30 days.
+     */
+    blackboardCleanup?: {
+        enabled?: boolean;
+        intervalSeconds?: number;
+        retentionDays?: number;
+        keepLatest?: number;
+        keepPinned?: boolean;
+        keepDecisions?: boolean;
+    };
+    /**
      * Register the deterministic `/deers-agent-team` activation surfaces (the
      * closed-namespace slash command and the plain-text gesture boundary).
      * Disable to keep the natural-language trigger as the only entry point.

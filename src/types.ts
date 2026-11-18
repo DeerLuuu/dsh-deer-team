@@ -288,6 +288,8 @@ export interface BlackboardState {
   /** Monotonic entry id counter; ids are `bb-<seq>`. */
   seq: number
   entries: BlackboardEntry[]
+  /** Last time automatic cleanup removed at least one entry. */
+  lastCleanupAt?: number
 }
 
 /** One selectable option in a team poll. */

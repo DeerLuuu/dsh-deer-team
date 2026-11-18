@@ -198,10 +198,17 @@ describe('AgentTeams web UI page + registration', () => {
     // Shared blackboard: the human can read the feed and post/vote from the page.
     expect(body).toContain('<h2>Blackboard</h2>')
     expect(body).toContain('id="board-form"')
+    expect(body).toContain('id="board-author-filter"')
+    expect(body).toContain('id="board-kind-filter"')
+    expect(body).toContain('id="board-cleanup"')
     expect(body).toContain("'/plugins/deers-dsh-agent-team/blackboard'")
     // Poll records: the standalone panel renders the same durable polls.
     expect(body).toContain('<h2>Polls</h2>')
     expect(body).toContain('id="polls"')
     expect(body).toContain('function renderPolls()')
+    // The inline page script must stay syntactically valid after template edits.
+    const inlineScript = [...body.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(match => match[1]).join('\n')
+    expect(inlineScript.length).toBeGreaterThan(100)
+    expect(() => new Function(inlineScript)).not.toThrow()
   })
 })

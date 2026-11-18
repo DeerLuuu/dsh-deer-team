@@ -2,8 +2,8 @@
  * Shared blackboard panel: the human side of the team's brainstorming feed.
  *
  * Reads `GET /plugins/deers-dsh-agent-team/blackboard` and writes through the
- * same route (post / vote). The human acts as the captain, matching the
- * captain-authored messages the model tools already attribute to `captain`.
+ * same route (post / vote / cleanup). The human acts as the captain, matching
+ * the captain-authored messages the model tools already attribute to `captain`.
  * @module deers-dsh-agent-team/client/BlackboardPanel
  */
 import type { AgentTeamsTranslate } from './locales.ts';

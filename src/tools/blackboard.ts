@@ -20,12 +20,15 @@ import {
   BLACKBOARD_DEFAULT_LIMIT,
   BLACKBOARD_MAX_CONTENT,
   BLACKBOARD_MAX_LIMIT,
+  DEFAULT_BLACKBOARD_CLEANUP,
   blackboardOf,
+  cleanupBlackboard,
   clearBlackboard,
   postBlackboardEntry,
   readBlackboard,
   renderBlackboard,
   voteBlackboardEntry,
+  type BlackboardCleanupPolicy,
 } from '../blackboard.ts'
 import { CAPTAIN_KEY, findTeamByParticipant, readTeam, withTeamLock, writeTeam } from '../state.ts'
 import type { ToolsConfig } from '../tools.ts'
@@ -119,6 +122,7 @@ const readEntrySchema = {
  * @param config - resolved plugin config (state directory name).
  */
 export function createBlackboardTools(_ctx: Context, config: ToolsConfig): ToolDefinition[] {
+  const cleanupPolicy: BlackboardCleanupPolicy = config.blackboardCleanup ?? DEFAULT_BLACKBOARD_CLEANUP
   const post = defineTool({
     name: 'deers_team_blackboard_post',
     description: 'Append one entry to the team blackboard: a durable shared feed every team member can read. Use it for brainstorming, collected ideas, feature proposals and decisions that are not yet tasks. Entries are append-only; later entries can reference earlier ids.',
@@ -156,6 +160,7 @@ export function createBlackboardTools(_ctx: Context, config: ToolsConfig): ToolD
           content: args.content,
           pinned: args.pinned === true,
         })
+        cleanupBlackboard(team, cleanupPolicy)
         await writeTeam(stateRoot, team)
         return {
           team_id: team.id,
@@ -175,6 +180,7 @@ export function createBlackboardTools(_ctx: Context, config: ToolsConfig): ToolD
     parameters: {
       author: { type: 'string', description: 'Only entries authored by this participant ("captain" or a member name).' },
       kind: { type: 'string', description: 'Only entries of this kind: note, idea, proposal or decision.' },
+      q: { type: 'string', description: 'Case-insensitive search over entry content and author.' },
       limit: { type: 'number', description: `How many latest entries to return (1-${BLACKBOARD_MAX_LIMIT}, default ${BLACKBOARD_DEFAULT_LIMIT}).` },
     },
     output: {
@@ -196,10 +202,14 @@ export function createBlackboardTools(_ctx: Context, config: ToolsConfig): ToolD
       }],
     },
     async execute(args, exec) {
-      return withCallerTeam(config, exec, async ({ team }) => {
+      return withCallerTeam(config, exec, async ({ team, stateRoot }) => {
+        // Lazy cleanup keeps a board bounded even when the timer service is
+        // absent; the periodic loop still handles inactive teams.
+        if (cleanupBlackboard(team, cleanupPolicy).removed > 0) await writeTeam(stateRoot, team)
         const result = readBlackboard(team, {
           author: args.author,
           kind: args.kind,
+          q: args.q,
           limit: typeof args.limit === 'number' ? args.limit : undefined,
         })
         return { team_id: team.id, total: result.total, entries: result.entries }
@@ -242,6 +252,7 @@ export function createBlackboardTools(_ctx: Context, config: ToolsConfig): ToolD
           voter: identity.name,
           vote: choice,
         })
+        cleanupBlackboard(team, cleanupPolicy)
         await writeTeam(stateRoot, team)
         return {
           team_id: team.id,

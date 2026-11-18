@@ -44,7 +44,7 @@ Ask in natural language. The plugin provides the team protocol, 29 coordination 
 | **Automatic reuse and safe takeover** | Idle members claim the next ready task; reassignment revokes stale attempts before new work starts, and cold recovery retries stranded open attempts. |
 | **Router-role captain** | The captain coordinates, reviews and consolidates; implementation/repair takeover is blocked by default (`captainMayImplement: false`) so heavy work stays with members unless a profile explicitly opts in. |
 | **Direct messaging** | Members send durable mailbox messages directly to teammates or the captain—no relay required. |
-| **Shared blackboard** | A durable team feed for brainstorming, idea collection and feature votes: every participant can post notes/ideas/proposals/decisions, read the whole board, and cast one up/down vote per proposal. Members can post and vote; clearing is captain-only. The activity panel shows the board and lets the human post and vote as the captain. |
+| **Shared blackboard** | A durable team feed for brainstorming, idea collection and feature votes: every participant can post notes/ideas/proposals/decisions, read the whole board, and cast one up/down vote per proposal. The panel filters by author, kind and search text, groups by kind or member, shows per-kind counts, and can clean stale entries on demand. A configurable host loop removes entries older than the retention window while always keeping the newest N, pinned entries and decisions. Members can post and vote; clearing is captain-only. |
 | **Team polls** | Formal voting lives in its own store: the captain starts a single- or multi-choice poll with explicit options, an adoption rule (`majority` / `gt` / `percent`), a quorum, an optional deadline and anonymity; every participant casts one revisioned ballot via `deers_team_vote_cast`, and closing freezes an auditable decision (adopted options, quorum status, summary). A dedicated poll floating window opens from the team header for the human; blackboard reactions stay informal. |
 | **Independent watchdog** | A host-side loop raises alerts for stalled attempts, exhausted retries and message loops; alerts are persisted in team state, shown in status/digest, and wake the captain once per new alert. The watchdog reports, it never mutates task state. |
 | **Bounded context** | `deers_team_digest` returns a length-bounded team summary for routine turns; `deers_team_recall` fetches exact task/message/board detail by id only when needed. |
@@ -60,26 +60,26 @@ The conversation card and activity panel use Harness's official locale service. 
 
 ## Install and choose versions
 
-**Recommended pair: DeepSeek Harness `0.3.2-rc.2` + AgentTeams `0.5.0`. The host remains an RC.**
+**Recommended pair: DeepSeek Harness `0.3.2-rc.2` + AgentTeams `0.6.0`. The host remains an RC.**
 
 | Use case | DeepSeek Harness | AgentTeams plugin |
 | --- | --- | --- |
-| **Recommended** | **`0.3.2-rc.2`** | **`0.5.0`** |
-| Preview RC (supported) | `0.3.2-rc.2` | `0.5.0` |
-| Preview Alpha (supported) | `0.3.2-alpha.2` | `0.5.0` |
-| Preview Alpha (supported) | `0.3.2-alpha.1` | `0.5.0` |
-| Previous recommended RC | `0.1.7-rc.2` | `0.5.0` |
-| Legacy RC | `0.1.5-rc.1`, `0.1.5-rc.2`, `0.1.5-rc.3` | `0.5.0` |
-| Retaining an older RC | `0.1.2-rc.1` | `0.5.0` |
-| Developer Alpha testing | `0.1.2-alpha.5` | `0.5.0` |
-| Retaining an older Alpha | `0.1.2-alpha.2` | `0.5.0` |
+| **Recommended** | **`0.3.2-rc.2`** | **`0.6.0`** |
+| Preview RC (supported) | `0.3.2-rc.2` | `0.6.0` |
+| Preview Alpha (supported) | `0.3.2-alpha.2` | `0.6.0` |
+| Preview Alpha (supported) | `0.3.2-alpha.1` | `0.6.0` |
+| Previous recommended RC | `0.1.7-rc.2` | `0.6.0` |
+| Legacy RC | `0.1.5-rc.1`, `0.1.5-rc.2`, `0.1.5-rc.3` | `0.6.0` |
+| Retaining an older RC | `0.1.2-rc.1` | `0.6.0` |
+| Developer Alpha testing | `0.1.2-alpha.5` | `0.6.0` |
+| Retaining an older Alpha | `0.1.2-alpha.2` | `0.6.0` |
 
 ### Desktop app
 
 In the app sidebar, open **Plugins → Add plugin** and enter the npm package spec:
 
 ```text
-deers-dsh-agent-team@0.5.0
+deers-dsh-agent-team@0.6.0
 ```
 
 Install it, then choose **Enable now**. If the host asks for a restart, restart the desktop app. Use the package spec above for the published build; an npm or GitHub webpage URL is not the same install source. For Git installation, use a commit containing the verified build outputs described below.
@@ -100,7 +100,7 @@ Skip this if you already run this version. Alpha is opt-in: select an exact Alph
 Install or upgrade from npm (pinned to this `latest` release):
 
 ```sh
-dsh plugin --profile web add --save-exact deers-dsh-agent-team@0.5.0
+dsh plugin --profile web add --save-exact deers-dsh-agent-team@0.6.0
 ```
 
 For a CLI-managed installation, replace `web` with your active CLI profile. **Stop and restart that profile's Harness process, then refresh the browser.** Installing the plugin does not upgrade Harness; the host and plugin have independent `latest` channels.

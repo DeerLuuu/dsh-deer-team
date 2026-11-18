@@ -7,8 +7,10 @@ import type { ToolRunContext } from '@deepseek-ai/dsh-tools'
 import {
   BLACKBOARD_MAX_CONTENT,
   BLACKBOARD_MAX_ENTRIES,
+  DEFAULT_BLACKBOARD_CLEANUP,
   blackboardOf,
   blackboardStatus,
+  cleanupBlackboard,
   clearBlackboard,
   normalizeBlackboard,
   postBlackboardEntry,
@@ -18,6 +20,7 @@ import {
   voteBlackboardEntry,
 } from '../src/blackboard.ts'
 import { createBlackboardTools, appendCaptainBlackboardEntry, castCaptainBlackboardVote } from '../src/tools/blackboard.ts'
+import { cleanupTeamBlackboard, installBlackboardCleanupLoop } from '../src/blackboard-cleanup.ts'
 import { createTeamDir, readTeam } from '../src/state.ts'
 import type { ToolsConfig } from '../src/tools.ts'
 import type { TeamState } from '../src/types.ts'
@@ -372,6 +375,100 @@ describe('panel writes (human as captain)', () => {
         entryId: 'bb-404',
         vote: 'up',
       })).rejects.toThrow(/no blackboard entry/)
+    } finally {
+      await rm(workspace, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('blackboard retention and filters', () => {
+  const DAY = 24 * 60 * 60 * 1000
+  const NOW = 1_800_000_000_000
+
+  function agedBoard(): TeamState {
+    const team = fixture()
+    team.blackboard = {
+      seq: 5,
+      entries: [
+        { id: 'bb-1', author: 'alice', kind: 'note', content: 'stale note', createdAt: NOW - 60 * DAY },
+        { id: 'bb-2', author: 'captain', kind: 'idea', content: 'pinned idea', createdAt: NOW - 60 * DAY, pinned: true },
+        { id: 'bb-3', author: 'alice', kind: 'decision', content: 'durable decision', createdAt: NOW - 60 * DAY },
+        { id: 'bb-4', author: 'bob', kind: 'proposal', content: 'stale proposal', createdAt: NOW - 45 * DAY },
+        { id: 'bb-5', author: 'alice', kind: 'note', content: 'fresh note', createdAt: NOW - DAY },
+      ],
+    }
+    return team
+  }
+
+  it('removes stale entries but keeps pinned, decisions and the newest entries', () => {
+    const team = agedBoard()
+    const result = cleanupBlackboard(team, {
+      ...DEFAULT_BLACKBOARD_CLEANUP,
+      retentionDays: 30,
+      keepLatest: 1,
+    }, NOW)
+    expect(result.ids).toEqual(['bb-1', 'bb-4'])
+    expect(team.blackboard?.entries.map(entry => entry.id)).toEqual(['bb-2', 'bb-3', 'bb-5'])
+    expect(team.blackboard?.lastCleanupAt).toBe(NOW)
+  })
+
+  it('is a no-op when the policy is disabled', () => {
+    const team = agedBoard()
+    expect(cleanupBlackboard(team, { ...DEFAULT_BLACKBOARD_CLEANUP, enabled: false }, NOW))
+      .toEqual({ removed: 0, ids: [] })
+    expect(team.blackboard?.entries).toHaveLength(5)
+    expect(team.blackboard?.lastCleanupAt).toBeUndefined()
+  })
+
+  it('filters reads by author, kind and a content search', () => {
+    const team = agedBoard()
+    expect(readBlackboard(team, { author: 'alice' }).entries.map(entry => entry.id)).toEqual(['bb-1', 'bb-3', 'bb-5'])
+    expect(readBlackboard(team, { kind: 'decision' }).entries.map(entry => entry.id)).toEqual(['bb-3'])
+    expect(readBlackboard(team, { q: 'fresh' }).entries.map(entry => entry.id)).toEqual(['bb-5'])
+    expect(readBlackboard(team, { q: 'ALICE' }).entries).toHaveLength(3)
+  })
+
+  it('persists cleanup under the team lock and reports remaining entries', async () => {
+    const workspace = await mkdtemp(join(tmpdir(), 'deers-board-cleanup-'))
+    try {
+      const stateRoot = join(workspace, '.deers-agent-team')
+      await createTeamDir(stateRoot, agedBoard())
+      const result = await cleanupTeamBlackboard(stateRoot, 'blackboard-fixture', {
+        ...DEFAULT_BLACKBOARD_CLEANUP,
+        retentionDays: 30,
+        keepLatest: 1,
+      }, NOW)
+      expect(result).toEqual({ removed: 2, ids: ['bb-1', 'bb-4'], remaining: 3 })
+      const saved = await readTeam(stateRoot, 'blackboard-fixture')
+      expect(saved?.blackboard?.entries.map(entry => entry.id)).toEqual(['bb-2', 'bb-3', 'bb-5'])
+      expect(saved?.blackboard?.lastCleanupAt).toBe(NOW)
+    } finally {
+      await rm(workspace, { recursive: true, force: true })
+    }
+  })
+
+  it('scans workspaces and cleans aged boards on demand', async () => {
+    const workspace = await mkdtemp(join(tmpdir(), 'deers-board-loop-'))
+    try {
+      const stateRoot = join(workspace, '.deers-agent-team')
+      const team = agedBoard()
+      // The timer loop uses the wall clock; rebase the fixture's ages onto it.
+      const shift = Date.now() - NOW
+      for (const entry of team.blackboard?.entries ?? []) entry.createdAt += shift
+      await createTeamDir(stateRoot, team)
+      const loop = installBlackboardCleanupLoop(fakeCtx(), {
+        ...DEFAULT_BLACKBOARD_CLEANUP,
+        retentionDays: 30,
+        keepLatest: 1,
+        intervalMs: 3_600_000,
+      }, {
+        stateDir: '.deers-agent-team',
+        workspaces: () => [{ path: workspace }],
+      })
+      await loop.scan()
+      const saved = await readTeam(stateRoot, 'blackboard-fixture')
+      expect(saved?.blackboard?.entries.map(entry => entry.id)).toEqual(['bb-2', 'bb-3', 'bb-5'])
+      loop.dispose()
     } finally {
       await rm(workspace, { recursive: true, force: true })
     }

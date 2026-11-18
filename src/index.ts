@@ -38,7 +38,8 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { collectArchivedTeamsActivity, collectTeamsActivity } from './snapshot.ts'
-import { blackboardOf } from './blackboard.ts'
+import { blackboardOf, DEFAULT_BLACKBOARD_CLEANUP } from './blackboard.ts'
+import { cleanupTeamBlackboard } from './blackboard-cleanup.ts'
 import { readPolls } from './polls.ts'
 import { findTeamByCaptain, readArchivedTeam, readMailbox, readTeam } from './state.ts'
 import type { TeamState } from './types.ts'
@@ -101,6 +102,18 @@ export interface Config {
     repeatThreshold?: number
     maxAttempts?: number
     notifyCaptain?: boolean
+  }
+  /**
+   * Periodic removal of stale blackboard entries. Defaults are on: keep the
+   * newest 10, pinned entries and decisions, drop the rest after 30 days.
+   */
+  blackboardCleanup?: {
+    enabled?: boolean
+    intervalSeconds?: number
+    retentionDays?: number
+    keepLatest?: number
+    keepPinned?: boolean
+    keepDecisions?: boolean
   }
   /**
    * Register the deterministic `/deers-agent-team` activation surfaces (the
@@ -171,6 +184,19 @@ export const Config: z<Config> = z.object({
     maxAttempts: z.natural().min(1).default(4),
     notifyCaptain: z.boolean().default(true),
   }),
+  blackboardCleanup: z.object({
+    /** Enable periodic removal of stale blackboard entries. */
+    enabled: z.boolean().default(true),
+    intervalSeconds: z.natural().min(60).default(3600),
+    /** Entries older than this many days become eligible for removal. */
+    retentionDays: z.natural().min(1).default(30),
+    /** The newest N entries are always retained. */
+    keepLatest: z.natural().default(10),
+    /** Pinned entries survive cleanup. */
+    keepPinned: z.boolean().default(true),
+    /** Decision entries survive cleanup. */
+    keepDecisions: z.boolean().default(true),
+  }).default({}),
 })
 
 /** The model-facing usage policy: when and how to drive AgentTeams. */
@@ -214,6 +240,14 @@ export function apply(ctx: Context, config: Config): void {
       repeatThreshold: config.watchdog?.repeatThreshold ?? 3,
       maxAttempts: config.watchdog?.maxAttempts ?? 4,
       notifyCaptain: config.watchdog?.notifyCaptain ?? true,
+    },
+    blackboardCleanup: {
+      enabled: config.blackboardCleanup?.enabled ?? true,
+      intervalMs: (config.blackboardCleanup?.intervalSeconds ?? 3600) * 1000,
+      retentionDays: config.blackboardCleanup?.retentionDays ?? 30,
+      keepLatest: config.blackboardCleanup?.keepLatest ?? 10,
+      keepPinned: config.blackboardCleanup?.keepPinned ?? true,
+      keepDecisions: config.blackboardCleanup?.keepDecisions ?? true,
     },
   }
 
@@ -492,8 +526,17 @@ export function apply(ctx: Context, config: Config): void {
                 ?? await readArchivedTeam(stateRoot, teamId).catch(() => undefined)
               if (team === undefined) continue
               const board = blackboardOf(team)
+              const cleanup = resolved.blackboardCleanup ?? { ...DEFAULT_BLACKBOARD_CLEANUP, intervalMs: 60 * 60 * 1000 }
               writeJson(res, 200, {
                 seq: board.seq,
+                lastCleanupAt: board.lastCleanupAt,
+                cleanup: {
+                  enabled: cleanup.enabled,
+                  retentionDays: cleanup.retentionDays,
+                  keepLatest: cleanup.keepLatest,
+                  keepPinned: cleanup.keepPinned,
+                  keepDecisions: cleanup.keepDecisions,
+                },
                 entries: board.entries.map(entry => ({
                   id: entry.id,
                   author: entry.author,
@@ -529,7 +572,18 @@ export function apply(ctx: Context, config: Config): void {
         }
         const resolvedTeam = await resolveCaptainTeam(sessionId, teamId)
         if (!resolvedTeam.ok) { writeJson(res, resolvedTeam.status, { error: resolvedTeam.error }); return }
+        const cleanupPolicy = resolved.blackboardCleanup ?? { ...DEFAULT_BLACKBOARD_CLEANUP, intervalMs: 60 * 60 * 1000 }
         try {
+          if (payload.action === 'cleanup') {
+            // Manual cleanup works even when the periodic policy is disabled.
+            const result = await cleanupTeamBlackboard(
+              resolvedTeam.stateRoot,
+              teamId,
+              { ...cleanupPolicy, enabled: true },
+            )
+            writeJson(res, 200, result)
+            return
+          }
           if (payload.action !== 'vote') {
             const content = typeof payload.content === 'string' ? payload.content : ''
             const kind = typeof payload.kind === 'string' ? payload.kind : undefined
@@ -539,6 +593,7 @@ export function apply(ctx: Context, config: Config): void {
               kind,
               pinned: payload.pinned === true,
             })
+            void cleanupTeamBlackboard(resolvedTeam.stateRoot, teamId, cleanupPolicy).catch(() => undefined)
             writeJson(res, 200, result)
             return
           }
@@ -546,6 +601,7 @@ export function apply(ctx: Context, config: Config): void {
           const vote = payload.vote === 'up' || payload.vote === 'down' || payload.vote === 'clear' ? payload.vote : ''
           if (entryId === '' || vote === '') { writeJson(res, 400, { error: 'entryId and vote (up/down/clear) are required' }); return }
           const result = await agentTeamsRuntime.voteCaptainBlackboardEntry(resolvedTeam.captain, teamId, entryId, vote)
+          void cleanupTeamBlackboard(resolvedTeam.stateRoot, teamId, cleanupPolicy).catch(() => undefined)
           writeJson(res, 200, result)
         } catch (error: unknown) {
           ctx.logger.warn(`deers-agent-team: blackboard request failed for ${teamId}: ${String(error)}`)

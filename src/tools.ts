@@ -22,6 +22,7 @@ import { blackboardStatus } from './blackboard.ts'
 import { batchCaptainReport, configureCaptainBatching, disposeCaptainBatching } from './notify-batch.ts'
 import { installWatchdogLoop } from './watchdog-loop.ts'
 import { DEFAULT_WATCHDOG, renderWatchdog, type WatchdogOptions } from './watchdog.ts'
+import { DEFAULT_BLACKBOARD_CLEANUP_OPTIONS, installBlackboardCleanupLoop } from './blackboard-cleanup.ts'
 import { drainTeamMemberChildren } from './harness-compat.ts'
 import {
   amendTaskContract,
@@ -118,6 +119,8 @@ export interface ToolsConfig {
   routerBatchWindowMs?: number
   /** Watchdog overrides merged onto {@link DEFAULT_WATCHDOG}. */
   watchdog?: Partial<WatchdogOptions>
+  /** Periodic blackboard retention policy; defaults to 30 days with pinned/decisions kept. */
+  blackboardCleanup?: import('./blackboard-cleanup.ts').BlackboardCleanupOptions
 }
 
 /** Browser/UI mutations allowed while a plan is waiting for approval. */
@@ -551,6 +554,24 @@ export function registerAgentTeamsTools(ctx: Context, config: ToolsConfig): Agen
       })
       return () => loop.dispose()
     }, 'deers-agent-team: watchdog loop')
+  }
+
+  // Blackboard retention loop: removes stale notes while keeping pinned
+  // entries, decisions and the newest N. Lazy cleanup on board writes covers
+  // hosts without a timer service.
+  const blackboardCleanup = { ...DEFAULT_BLACKBOARD_CLEANUP_OPTIONS, ...config.blackboardCleanup }
+  if (blackboardCleanup.enabled) {
+    ctx.effect(() => {
+      const service = typeof ctx.get === 'function'
+        ? (ctx.get('workspaceRegistry') ?? ctx.get('workspace'))
+        : undefined
+      const registry = service as { list?: () => readonly { path: string }[] } | undefined
+      const loop = installBlackboardCleanupLoop(ctx, blackboardCleanup, {
+        stateDir: config.stateDir,
+        workspaces: () => (typeof registry?.list === 'function' ? registry.list() : []),
+      })
+      return () => loop.dispose()
+    }, 'deers-agent-team: blackboard cleanup loop')
   }
 
   async function dispatchMember(captain: Agent, teamId: string, memberName: string, text: string, signal: AbortSignal, mode: 'queue' | 'steer', attemptId?: string): Promise<boolean> {

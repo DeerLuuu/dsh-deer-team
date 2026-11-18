@@ -102,11 +102,20 @@
       repeatThreshold: 3          # 同一消息重复几次告警
       maxAttempts: 4              # attempt 达到多少次告警
       notifyCaptain: true         # 新告警是否唤醒队长
+    blackboardCleanup:            # 黑板自动清理
+      enabled: true               # 关闭后只保留手动“清理过期”
+      intervalSeconds: 3600       # 扫描周期
+      retentionDays: 30           # 超过多少天的条目可清理
+      keepLatest: 10              # 总是保留最新 N 条
+      keepPinned: true            # 置顶条目不清理
+      keepDecisions: true         # decision 条目不清理
 ```
 
 **Router 角色**：`captainMayImplement: false`（默认）时，`deers_team_reassign_task` 和 Web 面板的“队长接管”都会拒绝 `implementation` / `repair` 任务，并提示改派成员；确实需要队长亲自实现时显式打开。审查、集成、普通 `work` 不受限制。
 
 **Watchdog**：宿主每 `intervalSeconds` 扫描一次活跃团队，检测卡住的 attempt（claims/in_progress 且心跳过旧）、反复失败（attempt ≥ maxAttempts 仍未完成）、消息循环（同人同内容重复 ≥ repeatThreshold）。告警写入 `team.json` 的 `watchdog.alerts`（最多 20 条，保留首次出现时间），出现在 `deers_team_status`/`deers_team_digest` 里；新增告警会唤醒队长一次。Watchdog 只报告，不自动改任务状态。
+
+**黑板自动清理**：默认开启，每 `intervalSeconds` 扫描一次活跃团队，把超过 `retentionDays` 的条目清掉，但始终保留最新 `keepLatest` 条、置顶条目（`keepPinned`）和 decision 条目（`keepDecisions`）。清理只删条目，不重置 id 序号；`team.json` 的 `blackboard.lastCleanupAt` 记录最近清理时间。把 `enabled` 设为 `false` 可关闭自动清理，Web 面板里的「清理过期」按钮仍可手动触发一次。
 
 最终优先级为：成员显式 `provider` + `model` / `model` → `memberModel` → 队长当前路由。成员沿用队长当前 provider/model 时继承队长的思考强度；provider 或 model 任一改变时自动使用目标模型的默认档。显式 `reasoning_effort`（目标模型支持的档位 id，或 `"default"`）优先，并在目标 provider/model 上创建前校验；不兼容时成员创建会明确失败。最终生效的 provider/model/思考强度会写入 `team.json`，供状态查询和成员冷恢复使用。
 
@@ -128,6 +137,8 @@
 写入与读取都走团队锁和 `writeTeam`，与任务状态共享同一把锁，不会互相覆盖。`deers_team_status` 会附带黑板条数与最近 3 条摘要，方便不额外调用 read 时也能看到进展。
 
 人也能直接在 UI 里用黑板：团队活动面板里有一个可折叠的「共享黑板」区，列出条目（作者/类型/时间/票数），带「赞成/反对」按钮和发布表单；人发布时以队长身份写入，所以成员和模型工具看到的是同一块黑板。独立面板页（`/deers-agent-team/`）也有同样的查看与发布表单。历史归档里的黑板只读。
+
+黑板面板支持**筛选与分类**：搜索框（内容/作者）、作者下拉、类型 chip（全部 / note / idea / proposal / decision，带数量），以及「不分组 / 按类型分组 / 按成员分组」三种视图。模型侧的 `deers_team_blackboard_read` 也支持 `author`、`kind`、`q` 参数。清理策略见上面的 `blackboardCleanup` 配置；面板会显示当前策略、上次清理时间，并提供手动「清理过期」。
 
 > 黑板上的赞成/反对只作非正式表态；正式的单选/多选投票用下面的团队投票工具。
 
