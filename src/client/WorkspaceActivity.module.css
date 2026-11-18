@@ -36,3 +36,10 @@
   .content { padding: 20px 28px 32px; }
 }
 @media (prefers-reduced-motion: reduce) { .skeleton i { animation: none; } }
+
+/* Native option popups otherwise inherit a light label on a white system menu. */
+.selectorSelect option,
+.selectorSelect optgroup {
+  background-color: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+}

@@ -2565,3 +2565,11 @@
 .teamHead .teamStats {
   margin-left: auto;
 }
+/* Native option popups otherwise inherit a light label on a white system menu. */
+.taskActionSelect option,
+.taskActionSelect optgroup,
+.planCard select option,
+.planCard select optgroup {
+  background-color: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+}

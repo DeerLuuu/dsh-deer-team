@@ -443,3 +443,10 @@
   outline: 2px solid var(--dsw-alias-state-business-primary);
   outline-offset: 2px;
 }
+
+/* Native option popups otherwise inherit a light label on a white system menu. */
+.select option,
+.select optgroup {
+  background-color: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+}

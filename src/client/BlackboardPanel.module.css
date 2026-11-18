@@ -346,3 +346,9 @@
   font-size: calc(10px + var(--deers-font-boost, 0px));
   font-weight: 500;
 }
+/* Native option popups otherwise inherit a light label on a white system menu. */
+.select option,
+.select optgroup {
+  background-color: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+}

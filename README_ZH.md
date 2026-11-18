@@ -59,26 +59,26 @@
 
 ## 安装与版本选择
 
-**推荐组合：DeepSeek Harness `0.3.2-rc.2` + AgentTeams `0.6.0`。宿主仍为 RC 版本。**
+**推荐组合：DeepSeek Harness `0.3.2-rc.2` + AgentTeams `0.6.1`。宿主仍为 RC 版本。**
 
 | 使用场景 | DeepSeek Harness | AgentTeams 插件 |
 | --- | --- | --- |
-| **推荐版本** | **`0.3.2-rc.2`** | **`0.6.0`** |
-| 预览 RC（已支持） | `0.3.2-rc.2` | `0.6.0` |
-| 预览 Alpha（已支持） | `0.3.2-alpha.2` | `0.6.0` |
-| 预览 Alpha（已支持） | `0.3.2-alpha.1` | `0.6.0` |
-| 上一推荐 RC | `0.1.7-rc.2` | `0.6.0` |
-| 保留旧 RC | `0.1.5-rc.1`, `0.1.5-rc.2`, `0.1.5-rc.3` | `0.6.0` |
-| 保留旧 RC | `0.1.2-rc.1` | `0.6.0` |
-| 开发者测试 Alpha | `0.1.2-alpha.5` | `0.6.0` |
-| 保留旧 Alpha | `0.1.2-alpha.2` | `0.6.0` |
+| **推荐版本** | **`0.3.2-rc.2`** | **`0.6.1`** |
+| 预览 RC（已支持） | `0.3.2-rc.2` | `0.6.1` |
+| 预览 Alpha（已支持） | `0.3.2-alpha.2` | `0.6.1` |
+| 预览 Alpha（已支持） | `0.3.2-alpha.1` | `0.6.1` |
+| 上一推荐 RC | `0.1.7-rc.2` | `0.6.1` |
+| 保留旧 RC | `0.1.5-rc.1`, `0.1.5-rc.2`, `0.1.5-rc.3` | `0.6.1` |
+| 保留旧 RC | `0.1.2-rc.1` | `0.6.1` |
+| 开发者测试 Alpha | `0.1.2-alpha.5` | `0.6.1` |
+| 保留旧 Alpha | `0.1.2-alpha.2` | `0.6.1` |
 
 ### 桌面端
 
 在应用侧栏打开「插件 → 添加插件」，输入 npm 包名和版本：
 
 ```text
-deers-dsh-agent-team@0.6.0
+deers-dsh-agent-team@0.6.1
 ```
 
 安装完成后点击「立即启用」；宿主提示需要重启时，重启桌面应用。发布版请使用上面的包名，npm 或 GitHub 网页链接与 npm 包名不是同一种安装来源。从 Git 安装时，请选用包含下方所述已验证构建产物的提交。
@@ -99,7 +99,7 @@ dsh --version
 从 npm 安装或升级插件（命令锁定本次 `latest` 正式版）：
 
 ```sh
-dsh plugin --profile web add --save-exact deers-dsh-agent-team@0.6.0
+dsh plugin --profile web add --save-exact deers-dsh-agent-team@0.6.1
 ```
 
 CLI 管理的安装可将 `web` 换成实际使用的 CLI profile。**安装后，停止并重新启动该 profile 的 Harness 进程，再刷新浏览器。** 安装插件不会自动升级宿主；Harness 的 `latest` 与插件的 `latest` 是两个独立渠道。
