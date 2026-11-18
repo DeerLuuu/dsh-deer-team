@@ -1,0 +1,218 @@
+{
+  "passed": false,
+  "version": "0.2.1-rc.2",
+  "artifactSha256": "7e7c70e03aeb2f50138d06c97d3c07f942304afffc9f7a06f3954f65593d1094",
+  "pluginVersion": "0.1.29",
+  "testFiles": {
+    "harness-runtime-verify.mjs": "afc7f04a5c063a9a0f1dc5bf4b4cdcb484498bfbca6b6bae0ee2317716c04946",
+    "harness-runtime-scenarios.mjs": "ee4a8a9fbd415c63dfdd13fad67293d61b13c68f1cc203b04c123124fcfef76b",
+    "fixtures/harness-runtime-llm.mjs": "744725b5ad8ce3e62f5d4d5869b0c1ade0e4df55118c365523f64f71ff90021b",
+    "fixtures/harness-runtime-resume.mjs": "08879508488e990fa19f5604891e5f33f83097d410e6faf9e67abec12ba1587c",
+    "fixtures/harness-runtime-idle.mjs": "197247177b9d514a15adc70d176e0f71118f14c93222d3406c7ad1e0cbb8ba32",
+    "fixtures/harness-runtime-entry.mjs": "7475884534c9d5fc10f96a6f32fad3d52e5ee5c7f9d465e40bcbf54f1c265ab7",
+    "fixtures/harness-runtime-web-approval.mjs": "3b6c3967f1398e27c27cbdf1c48e28c1e3257af30ce136fd5245f7c4fcacd982",
+    "fixtures/harness-runtime-protocol.mjs": "6fe7385485d646c1ae178364ff4347c441e054580bf8b87f5fac4da52766223f",
+    "fixtures/harness-runtime-stability.mjs": "609e23b76e5f996eebd4fb6429a0ad3ed9dd93d8a7c64cc4c94b5dc212892ab4"
+  },
+  "node": "v24.13.0",
+  "platform": "win32",
+  "arch": "x64",
+  "cohortCount": 295,
+  "runs": [
+    {
+      "scenario": "lifecycle",
+      "passed": false,
+      "exit": {
+        "code": null,
+        "signal": "SIGTERM",
+        "timedOut": true
+      },
+      "assertions": {
+        "exit0": false,
+        "productMarker": false,
+        "pluginToolsVisible": true,
+        "memberExecuted": false,
+        "explicitReasoning": false,
+        "taskTerminal": false,
+        "secondWake": false,
+        "fifoMessageOrder": false,
+        "messagesSentWhileBusy": false
+      },
+      "requests": 10,
+      "memberRequests": 0
+    },
+    {
+      "scenario": "fallback",
+      "passed": false,
+      "exit": {
+        "code": null,
+        "signal": "SIGTERM",
+        "timedOut": true
+      },
+      "assertions": {
+        "exit0": false,
+        "productMarker": false,
+        "pluginToolsVisible": true,
+        "memberExecuted": false,
+        "explicitReasoning": false,
+        "taskTerminal": false,
+        "secondWake": false,
+        "fallbackActivated": false,
+        "fallbackReasoningReset": false
+      },
+      "requests": 8,
+      "memberRequests": 0
+    },
+    {
+      "scenario": "failure",
+      "passed": false,
+      "exit": {
+        "code": null,
+        "signal": "SIGTERM",
+        "timedOut": true
+      },
+      "assertions": {
+        "exit0": false,
+        "productMarker": false,
+        "pluginToolsVisible": true,
+        "memberExecuted": false,
+        "explicitReasoning": false,
+        "taskTerminal": false
+      },
+      "requests": 8,
+      "memberRequests": 0
+    },
+    {
+      "scenario": "captain-idle-wakeup",
+      "passed": false,
+      "exit": {
+        "code": 1,
+        "signal": null,
+        "timedOut": false
+      },
+      "assertions": {
+        "exit0": false,
+        "productMarker": false,
+        "pluginToolsVisible": true,
+        "memberExecuted": false,
+        "explicitReasoning": false,
+        "taskTerminal": false,
+        "captainActuallyYielded": true,
+        "notifiedAfterIdle": false
+      },
+      "requests": 4,
+      "memberRequests": 0
+    },
+    {
+      "scenario": "progressive-entry",
+      "passed": false,
+      "assertions": {
+        "exit0": false,
+        "productMarker": false,
+        "allEntries": false,
+        "stablePrefixes": false,
+        "thirtyOrdinaryTurns": false
+      },
+      "cases": [],
+      "exit": {
+        "code": null,
+        "signal": "SIGTERM",
+        "timedOut": true
+      }
+    },
+    {
+      "scenario": "web-approval",
+      "passed": false,
+      "assertions": {
+        "exit0": false,
+        "productMarker": false,
+        "driverCompleted": false,
+        "stagedBeforeApproval": false,
+        "independentApprovalWake": false,
+        "reportWakeAfterYield": false,
+        "noPollingOrDuplicateApproval": true,
+        "oneUserMessageAndHttpApproval": false,
+        "invalidTeamRejected": false,
+        "repeatApprovalRejected": false,
+        "stableCaptainHeaders": false,
+        "memberFourTools": false,
+        "taskCompleted": false
+      },
+      "exit": {
+        "code": null,
+        "signal": "SIGTERM",
+        "timedOut": true
+      }
+    },
+    {
+      "scenario": "protocol-compatibility",
+      "passed": true,
+      "assertions": {
+        "exit0": true,
+        "productMarker": true,
+        "legacyAllowlistAndColdRestore": true,
+        "legacyProfileDirectory": true,
+        "actualPtcDiscard": true,
+        "actualPruning": true,
+        "actualCompaction": true,
+        "existingPlanRevised": true,
+        "lifecycleArchived": true
+      },
+      "cases": [
+        {
+          "event": "protocol-case-passed",
+          "label": "legacy-allowlist-cold-compact",
+          "requests": 7,
+          "compactedHistory": true,
+          "persistedSubject": "Recovered task",
+          "archived": true,
+          "profile": "north"
+        },
+        {
+          "event": "protocol-case-passed",
+          "label": "ptc-discard-and-compact",
+          "requests": 9,
+          "compactedHistory": true,
+          "persistedSubject": "Recovered task",
+          "archived": true
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null,
+        "timedOut": false
+      }
+    },
+    {
+      "scenario": "stability",
+      "passed": false,
+      "assertions": {
+        "exit0": false,
+        "productMarker": false,
+        "lazy-start": false,
+        "running-plan-correction": false,
+        "steering": false,
+        "read-receipt-continuation": false,
+        "reassign": false,
+        "archive": false,
+        "batch-plan": false,
+        "terminal-evidence": false,
+        "report-retry": false,
+        "settlement-dedup": false
+      },
+      "evidence": [],
+      "exit": {
+        "code": 1,
+        "signal": null,
+        "timedOut": false
+      }
+    }
+  ],
+  "unverified": [
+    "real provider APIs and credentials",
+    "browser interaction",
+    "other operating systems",
+    "native terminal execution",
+    "live user-data migration"
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "passed": true,
+  "version": "0.2.1-alpha.2",
+  "artifactSha256": "9c6328803dde75374ba4e521f03c77a2dddbbdd65bea97576a3648ad6d057da8",
+  "pluginVersion": "0.1.24",
+  "testFiles": {
+    "harness-runtime-verify.mjs": "afc7f04a5c063a9a0f1dc5bf4b4cdcb484498bfbca6b6bae0ee2317716c04946",
+    "harness-runtime-scenarios.mjs": "ee4a8a9fbd415c63dfdd13fad67293d61b13c68f1cc203b04c123124fcfef76b",
+    "fixtures/harness-runtime-llm.mjs": "744725b5ad8ce3e62f5d4d5869b0c1ade0e4df55118c365523f64f71ff90021b",
+    "fixtures/harness-runtime-resume.mjs": "08879508488e990fa19f5604891e5f33f83097d410e6faf9e67abec12ba1587c",
+    "fixtures/harness-runtime-idle.mjs": "197247177b9d514a15adc70d176e0f71118f14c93222d3406c7ad1e0cbb8ba32",
+    "fixtures/harness-runtime-entry.mjs": "7475884534c9d5fc10f96a6f32fad3d52e5ee5c7f9d465e40bcbf54f1c265ab7",
+    "fixtures/harness-runtime-web-approval.mjs": "3b6c3967f1398e27c27cbdf1c48e28c1e3257af30ce136fd5245f7c4fcacd982",
+    "fixtures/harness-runtime-protocol.mjs": "6fe7385485d646c1ae178364ff4347c441e054580bf8b87f5fac4da52766223f",
+    "fixtures/harness-runtime-stability.mjs": "609e23b76e5f996eebd4fb6429a0ad3ed9dd93d8a7c64cc4c94b5dc212892ab4"
+  },
+  "node": "v24.13.0",
+  "platform": "win32",
+  "arch": "x64",
+  "cohortCount": 289,
+  "runs": [
+    {
+      "scenario": "stability",
+      "passed": true,
+      "assertions": {
+        "exit0": true,
+        "productMarker": true,
+        "lazy-start": true,
+        "running-plan-correction": true,
+        "steering": true,
+        "read-receipt-continuation": true,
+        "reassign": true,
+        "archive": true,
+        "batch-plan": true,
+        "terminal-evidence": true,
+        "report-retry": true,
+        "settlement-dedup": true
+      },
+      "evidence": [
+        {
+          "event": "stability-lazy-start-passed",
+          "readyRequests": 1,
+          "blockedRequests": 0,
+          "welcomeRequests": 0,
+          "time": 1792123355109
+        },
+        {
+          "event": "stability-running-plan-correction-passed",
+          "pendingEdit": true,
+          "captainCancellation": true,
+          "blockedRequests": 0,
+          "time": 1792123355205
+        },
+        {
+          "event": "stability-steering-passed",
+          "queuedMessages": 32,
+          "modelStepsUntilConsumed": 1,
+          "time": 1792123356080
+        },
+        {
+          "event": "stability-read-receipt-continuation-passed",
+          "modelContinued": true,
+          "time": 1792123356154
+        },
+        {
+          "event": "stability-reassign-passed",
+          "sameMember": true,
+          "staleInputExcluded": true,
+          "time": 1792123356297
+        },
+        {
+          "event": "stability-archive-passed",
+          "pendingMessagesCleared": 32,
+          "descendantsStopped": true,
+          "siblingPreserved": true,
+          "retiredResumeRejected": true,
+          "time": 1792123357380
+        },
+        {
+          "event": "stability-batch-plan-passed",
+          "members": 5,
+          "tasks": 6,
+          "setupToolCalls": 1,
+          "previousEquivalentToolCalls": 12,
+          "memberModelRequests": 0,
+          "time": 1792123357432
+        },
+        {
+          "event": "stability-terminal-evidence-passed",
+          "records": 1,
+          "duplicateAppend": false,
+          "originalResultPreserved": true,
+          "time": 1792123357694
+        },
+        {
+          "event": "stability-report-retry-passed",
+          "duplicateModelRequests": 0,
+          "time": 1792123357773
+        },
+        {
+          "event": "stability-settlement-dedup-passed",
+          "reportWakes": 1,
+          "duplicateModelRequests": 0,
+          "time": 1792123357799
+        }
+      ],
+      "exit": {
+        "code": 0,
+        "signal": null,
+        "timedOut": false
+      }
+    }
+  ],
+  "unverified": [
+    "real provider APIs and credentials",
+    "browser interaction",
+    "other operating systems",
+    "native terminal execution",
+    "live user-data migration"
+  ]
+}
