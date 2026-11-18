@@ -32,7 +32,7 @@
 
 ## 版本更新
 
-[v0.1.30](./release-notes/v0.1.30.md) 把兼容策略改为**宿主线范围**：dsh 依赖声明为宿主线范围（当前 `0.2.x`）加已知线外/预发布精确值，因此 Harness `0.2.x` 内的任何后续版本（含新的 alpha/beta/RC 与补丁版）都不再需要在 profile 启动时同步插件；只有换线（0.3、0.4 等）才需要插件同步。`0.1.x` 旧宿主按精确值保留。本插件正式版使用 npm `latest` 渠道；推荐搭配仍是 Harness `0.3.2-rc.2`（宿主的 `next` 渠道）。[v0.1.29](./release-notes/v0.1.29.md) 声明了预览 RC 宿主 `0.3.2-rc.2`；[v0.1.28](./release-notes/v0.1.28.md) 带入工作区面板的任务操作、成员邮箱、活动时间线、尝试历史、状态过滤、多团队切换器与 DAG 缩放/小地图。精确支持范围见 [compatibility.json](./compatibility.json)。
+[v0.1.30](./release-notes/v0.1.30.md) 把兼容策略改为**宿主线范围**：dsh 依赖声明为宿主线范围（当前 `0.2.x`）加已知线外/预发布精确值，因此 Harness `0.2.x` 内的任何后续版本（含新的 alpha/beta/RC 与补丁版）都不再需要在 profile 启动时同步插件；只有换线（0.3、0.4 等）才需要插件同步。`0.1.x` 旧宿主按精确值保留。本插件正式版使用 npm `latest` 渠道；推荐搭配以支持矩阵中列出的精确 `next` RC 为准。[v0.1.29](./release-notes/v0.1.29.md) 声明了预览 RC 宿主；[v0.1.28](./release-notes/v0.1.28.md) 带入工作区面板的任务操作、成员邮箱、活动时间线、尝试历史、状态过滤、多团队切换器与 DAG 缩放/小地图。精确支持范围见 [compatibility.json](./compatibility.json)。
 
 ## 为什么需要 AgentTeams？
 
@@ -59,36 +59,37 @@
 
 ## 安装与版本选择
 
-**推荐组合：DeepSeek Harness `0.3.2-rc.2` + AgentTeams `0.6.1`。宿主仍为 RC 版本。**
+**推荐组合：DeepSeek Harness `0.2.2-rc.4` + AgentTeams `0.6.2`。宿主仍为 RC 版本。**
 
 | 使用场景 | DeepSeek Harness | AgentTeams 插件 |
 | --- | --- | --- |
-| **推荐版本** | **`0.3.2-rc.2`** | **`0.6.1`** |
-| 预览 RC（已支持） | `0.3.2-rc.2` | `0.6.1` |
-| 预览 Alpha（已支持） | `0.3.2-alpha.2` | `0.6.1` |
-| 预览 Alpha（已支持） | `0.3.2-alpha.1` | `0.6.1` |
-| 上一推荐 RC | `0.1.7-rc.2` | `0.6.1` |
-| 保留旧 RC | `0.1.5-rc.1`, `0.1.5-rc.2`, `0.1.5-rc.3` | `0.6.1` |
-| 保留旧 RC | `0.1.2-rc.1` | `0.6.1` |
-| 开发者测试 Alpha | `0.1.2-alpha.5` | `0.6.1` |
-| 保留旧 Alpha | `0.1.2-alpha.2` | `0.6.1` |
+| **推荐版本** | **`0.2.2-rc.4`** | **`0.6.2`** |
+| 预览 RC（已支持） | `0.2.1-rc.2` | `0.6.2` |
+| 预览 Alpha（已支持） | `0.2.1-alpha.2` | `0.6.2` |
+| 预览 Alpha（已支持） | `0.2.1-alpha.1` | `0.6.2` |
+| 上一推荐 RC | `0.2.0-rc.2` | `0.6.2` |
+| 保留旧 RC | `0.1.7-rc.2` | `0.6.2` |
+| 保留旧 RC | `0.1.5-rc.1`, `0.1.5-rc.2`, `0.1.5-rc.3` | `0.6.2` |
+| 保留旧 RC | `0.1.2-rc.1` | `0.6.2` |
+| 开发者测试 Alpha | `0.1.2-alpha.5` | `0.6.2` |
+| 保留旧 Alpha | `0.1.2-alpha.2` | `0.6.2` |
 
 ### 桌面端
 
 在应用侧栏打开「插件 → 添加插件」，输入 npm 包名和版本：
 
 ```text
-deers-dsh-agent-team@0.6.1
+deers-dsh-agent-team@0.6.2
 ```
 
 安装完成后点击「立即启用」；宿主提示需要重启时，重启桌面应用。发布版请使用上面的包名，npm 或 GitHub 网页链接与 npm 包名不是同一种安装来源。从 Git 安装时，请选用包含下方所述已验证构建产物的提交。
 
-桌面端自带 Harness 内核与包管理器，升级全局 CLI 不会升级桌面端；普通独立 CLI 不能管理桌面 profile，桌面端自带的 CLI carrier 在此版本可以管理。当前精确目标是已发布的 `0.3.2-rc.2`，仍属于 RC；此前源码预测已不再作为支持声明。详见[迁移验收记录](./docs/harness-0.3.2-rc.2/README.md)。
+桌面端自带 Harness 内核与包管理器，升级全局 CLI 不会升级桌面端；普通独立 CLI 不能管理桌面 profile，桌面端自带的 CLI carrier 在此版本可以管理。当前精确目标是已发布的 `0.2.2-rc.4`，仍属于 RC；此前源码预测已不再作为支持声明。详见[迁移验收记录](./docs/harness-0.2.2-rc.4/README.md)。
 
 ### CLI / Web：1. 安装 DeepSeek Harness
 
 ```sh
-npm install --global @deepseek-ai/dsh@0.3.2-rc.2
+npm install --global @deepseek-ai/dsh@0.2.2-rc.4
 dsh --version
 ```
 
@@ -99,7 +100,7 @@ dsh --version
 从 npm 安装或升级插件（命令锁定本次 `latest` 正式版）：
 
 ```sh
-dsh plugin --profile web add --save-exact deers-dsh-agent-team@0.6.1
+dsh plugin --profile web add --save-exact deers-dsh-agent-team@0.6.2
 ```
 
 CLI 管理的安装可将 `web` 换成实际使用的 CLI profile。**安装后，停止并重新启动该 profile 的 Harness 进程，再刷新浏览器。** 安装插件不会自动升级宿主；Harness 的 `latest` 与插件的 `latest` 是两个独立渠道。

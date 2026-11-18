@@ -32,7 +32,7 @@ Ask in natural language. The plugin provides the team protocol, 29 coordination 
 
 ## Releases
 
-[v0.1.30](./release-notes/v0.1.30.md) switches the compatibility policy to a **host line range**: the dsh peers declare the host line range (currently `0.2.x`) plus exact arms for known off-line/pre-release targets, so any later Harness `0.2.x` version (new alpha/beta/RC or patch) no longer needs a plugin sync at profile startup; only a line change (0.3, 0.4, …) does. Legacy `0.1.x` hosts stay enumerated exactly. This plugin release uses npm `latest`; the recommended host stays Harness `0.3.2-rc.2` (its `next` channel). [v0.1.29](./release-notes/v0.1.29.md) declared the `0.3.2-rc.2` preview RC host; [v0.1.28](./release-notes/v0.1.28.md) added the workspace panel's task operations, member mailbox, activity timeline, attempt history, state filter, multi-team switcher and DAG zoom/minimap. See the exact [support matrix](./compatibility.json).
+[v0.1.30](./release-notes/v0.1.30.md) switches the compatibility policy to a **host line range**: the dsh peers declare the host line range (currently `0.2.x`) plus exact arms for known off-line/pre-release targets, so any later Harness `0.2.x` version (new alpha/beta/RC or patch) no longer needs a plugin sync at profile startup; only a line change (0.3, 0.4, …) does. Legacy `0.1.x` hosts stay enumerated exactly. This plugin release uses npm `latest`; the recommended host is the exact `next` RC listed in the support matrix. [v0.1.29](./release-notes/v0.1.29.md) declared a preview RC host; [v0.1.28](./release-notes/v0.1.28.md) added the workspace panel's task operations, member mailbox, activity timeline, attempt history, state filter, multi-team switcher and DAG zoom/minimap. See the exact [support matrix](./compatibility.json).
 
 ## Why AgentTeams?
 
@@ -60,36 +60,37 @@ The conversation card and activity panel use Harness's official locale service. 
 
 ## Install and choose versions
 
-**Recommended pair: DeepSeek Harness `0.3.2-rc.2` + AgentTeams `0.6.1`. The host remains an RC.**
+**Recommended pair: DeepSeek Harness `0.2.2-rc.4` + AgentTeams `0.6.2`. The host remains an RC.**
 
 | Use case | DeepSeek Harness | AgentTeams plugin |
 | --- | --- | --- |
-| **Recommended** | **`0.3.2-rc.2`** | **`0.6.1`** |
-| Preview RC (supported) | `0.3.2-rc.2` | `0.6.1` |
-| Preview Alpha (supported) | `0.3.2-alpha.2` | `0.6.1` |
-| Preview Alpha (supported) | `0.3.2-alpha.1` | `0.6.1` |
-| Previous recommended RC | `0.1.7-rc.2` | `0.6.1` |
-| Legacy RC | `0.1.5-rc.1`, `0.1.5-rc.2`, `0.1.5-rc.3` | `0.6.1` |
-| Retaining an older RC | `0.1.2-rc.1` | `0.6.1` |
-| Developer Alpha testing | `0.1.2-alpha.5` | `0.6.1` |
-| Retaining an older Alpha | `0.1.2-alpha.2` | `0.6.1` |
+| **Recommended** | **`0.2.2-rc.4`** | **`0.6.2`** |
+| Preview RC (supported) | `0.2.1-rc.2` | `0.6.2` |
+| Preview Alpha (supported) | `0.2.1-alpha.2` | `0.6.2` |
+| Preview Alpha (supported) | `0.2.1-alpha.1` | `0.6.2` |
+| Previous recommended RC | `0.2.0-rc.2` | `0.6.2` |
+| Legacy RC | `0.1.7-rc.2` | `0.6.2` |
+| Legacy RC | `0.1.5-rc.1`, `0.1.5-rc.2`, `0.1.5-rc.3` | `0.6.2` |
+| Retaining an older RC | `0.1.2-rc.1` | `0.6.2` |
+| Developer Alpha testing | `0.1.2-alpha.5` | `0.6.2` |
+| Retaining an older Alpha | `0.1.2-alpha.2` | `0.6.2` |
 
 ### Desktop app
 
 In the app sidebar, open **Plugins → Add plugin** and enter the npm package spec:
 
 ```text
-deers-dsh-agent-team@0.6.1
+deers-dsh-agent-team@0.6.2
 ```
 
 Install it, then choose **Enable now**. If the host asks for a restart, restart the desktop app. Use the package spec above for the published build; an npm or GitHub webpage URL is not the same install source. For Git installation, use a commit containing the verified build outputs described below.
 
-The desktop app supplies its own Harness core and package manager. Upgrading the global CLI does not upgrade that core, and an ordinary standalone CLI cannot manage its desktop profile. The CLI carrier installed by the desktop app can manage that profile in `0.3.2-rc.2`. Check the embedded core against the compatibility list. Harness `0.3.2-rc.2` is now the exact published target; its RC status is unchanged. Earlier source-only predictions are no longer support declarations. See the [release migration evidence](./docs/harness-0.3.2-rc.2/README.md).
+The desktop app supplies its own Harness core and package manager. Upgrading the global CLI does not upgrade that core, and an ordinary standalone CLI cannot manage its desktop profile. The CLI carrier installed by the desktop app can manage that profile in `0.2.2-rc.4`. Check the embedded core against the compatibility list. Harness `0.2.2-rc.4` is now the exact published target; its RC status is unchanged. Earlier source-only predictions are no longer support declarations. See the [release migration evidence](./docs/harness-0.2.2-rc.4/README.md).
 
 ### CLI / Web: 1. Install DeepSeek Harness
 
 ```sh
-npm install --global @deepseek-ai/dsh@0.3.2-rc.2
+npm install --global @deepseek-ai/dsh@0.2.2-rc.4
 dsh --version
 ```
 
@@ -100,7 +101,7 @@ Skip this if you already run this version. Alpha is opt-in: select an exact Alph
 Install or upgrade from npm (pinned to this `latest` release):
 
 ```sh
-dsh plugin --profile web add --save-exact deers-dsh-agent-team@0.6.1
+dsh plugin --profile web add --save-exact deers-dsh-agent-team@0.6.2
 ```
 
 For a CLI-managed installation, replace `web` with your active CLI profile. **Stop and restart that profile's Harness process, then refresh the browser.** Installing the plugin does not upgrade Harness; the host and plugin have independent `latest` channels.
