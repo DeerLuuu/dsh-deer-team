@@ -61,7 +61,7 @@
 | `agent_teams_resume` | 显式恢复 halted 团队，必须带非空 reason；不重建已取消任务 |
 | `agent_teams_delete` | 结束团队：打断成员，团队目录**归档保留**（任务与依赖图、邮箱完整留存） |
 | `deers_team_blackboard_post` | 写共享黑板：`note` / `idea` / `proposal` / `decision`；队长与成员都可写，`pinned` 仅队长 |
-| `deers_team_blackboard_read` | 读整块黑板：可按作者/类型过滤、限制条数；所有成员看到同一份 |
+| `deers_team_blackboard_read` | 读整块黑板：可按作者/类型/搜索词（`q`）过滤、限制条数；所有成员看到同一份 |
 | `deers_team_blackboard_vote` | 对黑板条目投票：`up` / `down` / `clear`；每人每条最多一票 |
 | `deers_team_blackboard_clear` | 队长专属：清空黑板（必须 `confirm: true`），一轮结束后重置用 |
 | `deers_team_progress` | 成员心跳：claim 期间上报 percent/note，不改变任务状态；Watchdog 据此区分“还在干”和“卡住” |
